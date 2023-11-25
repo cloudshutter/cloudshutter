@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { chromium, ChromiumBrowser, Page } from 'playwright';
-import * as fs from 'fs';
 
 @Injectable()
 export class PreviewService {
@@ -13,11 +12,13 @@ export class PreviewService {
   }
 
   async onModuleDestroy() {
+    console.log('closing browser');
     await this.browser.close();
   }
 
   async generateWebsitePre(url: string) {
     await this.page.goto(url);
+    await this.page.setViewportSize({ width: 1280, height: 720 });
     const snapshot = await this.page.screenshot();
     return snapshot;
   }
