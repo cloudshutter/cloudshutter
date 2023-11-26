@@ -12,26 +12,24 @@ jobs:
       - name: checkout code
         uses: actions/checkout@v2
 
-      - name: Set node
-        uses: actions/setup-node@v3
-        with:
-          node-version: lts/*
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v2
-
-      - name: Install dep
-        run: pnpm i
-
-      - name: Bundle project
-        run: pnpm build
-
       - name: Deploy
         uses: wlixcc/SFTP-Deploy-Action@v1.0
         with:
           username: 'root'
           server: '${{ secrets.SERVER_IP }}'
           ssh_private_key: '${{ secrets.SERVER_PRIVATE_KEY }}'
-          local_path: 'cloudshutter/dist/*'
+          local_path: 'cloudshutter'
           remote_path: '/Project/cloudshutter'
           args: '-o ConnectTimeout=5'
+
+      - name: restart application
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: root
+          key: ${{ secrets.SERVER_PRIVATE_KEY }}
+          script: |
+            cd /Project/cloudshutter
+            pnpm i
+            pnpm build
+            pm2 start deploy.config.js
